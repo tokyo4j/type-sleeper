@@ -3,6 +3,7 @@ const sqlite = require("sqlite3");
 const bodyParser = require("body-parser");
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
+const cookieParser = require("cookie-parser");
 
 const SECRET = "foobar";
 const OPTIONS = {
@@ -10,72 +11,91 @@ const OPTIONS = {
   expiresIn: "10m",
 };
 
-const db_exists = fs.existsSync("./test.db");
 const db = new sqlite.Database("./test.db");
-db.serialize(() => {
-  db.run(
-    "CREATE TABLE IF NOT EXISTS keys(user_code INT, timestamp DATETIME, count INT)"
-  );
-  db.run(
-    "CREATE TABLE IF NOT EXISTS users(user_code INT, password VARCHAR(64), user_name VARCHAR(64))"
-  );
-  if (!db_exists) db.run("INSERT INTO users VALUES(999, 'pass', 'admin')");
-  db.all("SELECT * FROM users;", (err, rows) => {
-    console.log(rows);
+if (!fs.existsSync("./test.db")) {
+  db.serialize(() => {
+    db.run(
+      "CREATE TABLE IF NOT EXISTS keys(user_code INT, timestamp INT, count INT)"
+    );
+    db.run(
+      "CREATE TABLE IF NOT EXISTS users(user_code INT, password VARCHAR(64), user_name VARCHAR(64))"
+    );
+    db.run("INSERT INTO users VALUES(999, 'pass', 'admin')");
+    const d = new Date(2023, 2, 10);
+    db.run(`INSERT INTO keys VALUES
+              (999, ${new Date(2023, 2, 10, 0, 0, 0).getTime()}, 4),
+              (999, ${new Date(2023, 2, 10, 0, 0, 5).getTime()}, 2),
+              (999, ${new Date(2023, 2, 10, 0, 0, 10).getTime()}, 3),
+              (999, ${new Date(2023, 2, 10, 0, 0, 15).getTime()}, 5)
+          `);
+    db.all("SELECT * FROM users;", (err, rows) => {
+      console.log("users:", rows);
+    });
+    db.all("SELECT * FROM keys;", (err, rows) => {
+      console.log("keys:", rows);
+    });
   });
-});
+}
 
 const app = express();
 const PORT = 8080;
 
+app.use(cookieParser());
 app.use(bodyParser.json());
-app.use(express.static("frontend/dist"));
+
+function authenticate(req, res) {
+  const token = req.cookies.token || req.headers.authorization;
+  if (!token) {
+    res.redirect("/login");
+    return null;
+  }
+  try {
+    const decoded = jwt.verify(token, SECRET, OPTIONS);
+    return decoded.user_code;
+  } catch {
+    res.redirect("/login");
+    return null;
+  }
+}
 
 app.get("/", (req, res) => {
-  res.send("Hello World!");
+  if (authenticate(req, res))
+    res.sendFile(__dirname + "/frontend/dist/src/index/index.html");
 });
 
-// app.get("/hello", (req, res) => {
-//   res.sendFile(__dirname + "/frontend/dist/index.html");
-// });
+app.get("/login", (req, res) => {
+  res.sendFile(__dirname + "/frontend/dist/src/login/login.html");
+});
+
+app.use(express.static("frontend/dist"));
 
 app.post("/key", (req, res) => {
-  const user_code = jwt.verify(
-    req.headers.authorization,
-    SECRET,
-    OPTIONS
-  ).user_code;
-  if (!user_code) res.status(401).send();
-  db.run(
-    "INSERT INTO keys VALUES (?, ?, ?)",
-    user_code,
-    req.body.timestamp,
-    req.body.count
-  );
-  res.send("ok");
+  const user_code = authenticate(req, res);
+  if (user_code) {
+    db.run(
+      "INSERT INTO keys VALUES (?, ?, ?)",
+      user_code,
+      req.body.timestamp,
+      req.body.count
+    );
+    res.send("ok");
+  }
 });
 
 app.get("/key", (req, res) => {
-  const user_code = jwt.verify(
-    req.headers.authorization,
-    SECRET,
-    OPTIONS
-  ).user_code;
-  if (!user_code) res.status(401).send();
+  authenticate(req, res);
   db.all("SELECT * FROM keys", (err, rows) => {
     res.status(200).json(rows);
   });
 });
 
 app.post("/login", (req, res) => {
-  console.log(req.body);
   db.all(
     "SELECT password FROM users WHERE user_code = ?",
     req.body.user_code,
     (err, rows) => {
-      console.log("rows", rows);
       if (rows.length != 1 || rows[0].password != req.body.password) {
-        console.log("login failed");
+        res.status(401).send("Login failed");
         return;
       }
       const token = jwt.sign(
