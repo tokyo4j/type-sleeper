@@ -54,11 +54,15 @@ function DataVisualization({ data }: DataVisualizationProps) {
   });
 
   useEffect(() => {
-    // 5分間隔でデータをグループ化し、合計を計算する
+    if (data.length === 0) return; // データが空の場合は処理を終了
+
+    // timestampの最小値と最大値を取得
+    const minTimestamp = Math.min(...data.map(({ timestamp }) => timestamp));
+    const maxTimestamp = Math.max(...data.map(({ timestamp }) => timestamp));
+
+    // 5分ごとのグループ化し、合計を計算する
     const groupedData: GroupedData = data.reduce<GroupedData>((acc, { timestamp, count }) => {
-      // 各データポイントを5分間隔のキーにマッピング
-      const date = new Date(timestamp);
-      const key = new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), Math.floor(date.getMinutes() / 5) * 5).getTime();
+      const key = Math.floor((timestamp - minTimestamp) / (5 * 60 * 1000)) * (5 * 60 * 1000) + minTimestamp;
 
       if (!acc[key]) {
         acc[key] = { total: 0, timestamp: key };
@@ -69,8 +73,13 @@ function DataVisualization({ data }: DataVisualizationProps) {
       return acc;
     }, {});
 
-    const timestamps = Object.keys(groupedData).map(Number).sort((a, b) => a - b); // タイムスタンプでソート
-    const counts = timestamps.map(key => groupedData[key].total);
+    // タイムスタンプの範囲内で5分ごとのデータを生成
+    const timestamps: number[] = [];
+    for (let time = minTimestamp; time <= maxTimestamp; time += 5 * 60 * 1000) {
+      timestamps.push(time);
+    }
+
+    const counts = timestamps.map(timestamp => groupedData[timestamp]?.total ?? 0);
     const labels = timestamps.map(timestamp => new Date(timestamp).toLocaleString());
 
     setChartData({
