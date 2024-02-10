@@ -4,6 +4,7 @@ const bodyParser = require("body-parser");
 const jwt = require("jsonwebtoken");
 const fs = require("fs");
 const cookieParser = require("cookie-parser");
+const cors = require("cors");
 
 const SECRET = "foobar";
 const OPTIONS = {
@@ -19,6 +20,9 @@ if (!fs.existsSync("./test.db")) {
     );
     db.run(
       "CREATE TABLE IF NOT EXISTS users(user_code INT, password VARCHAR(64), user_name VARCHAR(64))"
+    );
+    db.run(
+      "CREATE TABLE IF NOT EXISTS sites(user_code INT, name VARCHAR(64), start INT, end INT)"
     );
     db.run("INSERT INTO users VALUES(999, 'pass', 'admin')");
     const d = new Date(2023, 2, 10);
@@ -40,6 +44,8 @@ if (!fs.existsSync("./test.db")) {
 const app = express();
 const PORT = 8080;
 
+app.use(cors());
+
 app.use(cookieParser());
 app.use(bodyParser.json());
 
@@ -52,7 +58,7 @@ function authenticate(req, res) {
   try {
     const decoded = jwt.verify(token, SECRET, OPTIONS);
     return decoded.user_code;
-  } catch {
+  } catch (e) {
     res.redirect("/login");
     return null;
   }
@@ -109,6 +115,76 @@ app.post("/login", (req, res) => {
     }
   );
 });
+
+WHITE_LIST = ["twitter.com", "youtube.com"];
+// Map user code to the site the user is currently viewing
+const sites = {};
+app.post("/site", (req, res) => {
+  const user_code = authenticate(req, res);
+  if (!user_code) return;
+  const site = req.body.site;
+  const now = Date.now();
+  console.log("/site", site);
+  if (!sites[user_code]) {
+    sites[user_code] = {
+      name: site,
+      start: now,
+      end: now,
+    };
+  } else {
+    sites[user_code].end = now;
+    if (sites[user_code].name != site) {
+      if (WHITE_LIST.includes(sites[user_code].name)) {
+        db.run(
+          "INSERT INTO sites VALUES(?, ?, ?, ?)",
+          user_code,
+          sites[user_code].name,
+          sites[user_code].start,
+          sites[user_code].end
+        );
+        console.log(
+          user_code,
+          sites[user_code].name,
+          sites[user_code].start,
+          sites[user_code].end
+        );
+      }
+
+      sites[user_code] = {
+        name: site,
+        start: now,
+        end: now,
+      };
+    } else {
+      sites[user_code].end = Date.now();
+    }
+    res.send("ok");
+  }
+});
+setInterval(() => {
+  const now = Date.now();
+  for (user_code in sites) {
+    if (now - sites[user_code].end > 10000) {
+      sites[user_code].end = now;
+      if (WHITE_LIST.includes(sites[user_code].name))
+        db.run(
+          "INSERT INTO sites VALUES(?, ?, ?, ?)",
+          user_code,
+          sites[user_code].name,
+          sites[user_code].start,
+          sites[user_code].end
+        );
+      console.log(
+        user_code,
+        sites[user_code].name,
+        sites[user_code].start,
+        sites[user_code].end,
+        "(timeout)"
+      );
+      delete sites[user_code];
+    }
+  }
+}, 5000);
 
 app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}...`);
