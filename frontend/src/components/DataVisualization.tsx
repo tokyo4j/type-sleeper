@@ -56,13 +56,22 @@ function DataVisualization({ data }: DataVisualizationProps) {
   useEffect(() => {
     if (data.length === 0) return; // データが空の場合は処理を終了
 
-    // timestampの最小値と最大値を取得
-    const minTimestamp = Math.min(...data.map(({ timestamp }) => timestamp));
-    const maxTimestamp = Math.max(...data.map(({ timestamp }) => timestamp));
+    // 本日の開始と終了のタイムスタンプを取得
+    const todayStartTimestamp = new Date().setHours(0, 0, 0, 0);
+    const todayEndTimestamp = new Date().setHours(23, 59, 59, 999);
 
-    // 5分ごとのグループ化し、合計を計算する
-    const groupedData: GroupedData = data.reduce<GroupedData>((acc, { timestamp, count }) => {
-      const key = Math.floor((timestamp - minTimestamp) / (5 * 60 * 1000)) * (5 * 60 * 1000) + minTimestamp;
+    // 本日のデータを抽出
+    const filteredData = data.filter(({ timestamp }) => timestamp >= todayStartTimestamp && timestamp <= todayEndTimestamp);
+
+    if (filteredData.length === 0) return; // 今日のデータがない場合は処理を終了
+
+    // timestampの最小値と最大値を取得
+    const minTimestamp = todayStartTimestamp;
+    const maxTimestamp = todayEndTimestamp;
+
+    // 1時間ごとのグループ化し、合計を計算する
+    const groupedData: GroupedData = filteredData.reduce<GroupedData>((acc, { timestamp, count }) => {
+      const key = Math.floor((timestamp - minTimestamp) / (60 * 60 * 1000)) * (60 * 60 * 1000) + minTimestamp;
 
       if (!acc[key]) {
         acc[key] = { total: 0, timestamp: key };
@@ -73,13 +82,13 @@ function DataVisualization({ data }: DataVisualizationProps) {
       return acc;
     }, {});
 
-    // タイムスタンプの範囲内で5分ごとのデータを生成
+    // タイムスタンプの範囲内で1時間ごとのデータを生成
     const timestamps: number[] = [];
-    for (let time = minTimestamp; time <= maxTimestamp; time += 5 * 60 * 1000) {
+    for (let time = minTimestamp; time <= maxTimestamp; time += 60 * 60 * 1000) {
       timestamps.push(time);
     }
 
-    const counts = timestamps.map(timestamp => groupedData[timestamp]?.total ?? 0);
+    const counts = timestamps.map(timestamp => groupedData[timestamp]?.total ?? 0); // もしデータがない場合は0をセットする
     const labels = timestamps.map(timestamp => new Date(timestamp).toLocaleString());
 
     setChartData({
