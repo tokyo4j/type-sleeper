@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom/client";
 import "../index.css";
 import DataVisualization from "../components/DataVisualization";
+import SleepTimeDisplay from "../components/SleepTimeDisplay"; // 新しいコンポーネントをインポート
 
 interface KeyData {
   user_code: number;
@@ -9,8 +10,14 @@ interface KeyData {
   count: number;
 }
 
+enum DisplayState {
+  TypingResult,
+  SleepTimeDisplay
+}
+
 const Index = () => {
   const [keys, setKeys] = useState<KeyData[]>([]);
+  const [displayState, setDisplayState] = useState(DisplayState.TypingResult); // 現在の表示状態を管理
 
   useEffect(() => {
     fetch("/key")
@@ -56,21 +63,51 @@ const Index = () => {
   // プラスマイナスを数値の先頭に表示する
   const diffWithSign = diffFromYesterday >= 0 ? `+${diffFromYesterday}` : diffFromYesterday;
 
+  // タイピング結果画面へ切り替える
+  const switchToTypingResult = () => {
+    setDisplayState(DisplayState.TypingResult);
+  };
+
+  // 睡眠時間表示画面へ切り替える
+  const switchToSleepTimeDisplay = () => {
+    setDisplayState(DisplayState.SleepTimeDisplay);
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-8">
-      <h1 className="text-3xl font-bold text-emerald-500 mb-4">タイピングの結果</h1>
-      <p className="mb-8 text-lg text-gray-700">
-        タイピング数を可視化するグラフを表示します。
-      </p>
+      {/* ヘッダー部分 */}
+      <header className="flex justify-between items-center mb-8">
+        <h1 className="text-3xl font-bold text-emerald-500">タイピング & スリープ</h1>
+        {/* ボタンをクリックして各画面に切り替え */}
+        <div>
+          <button
+            className={`mr-4 px-4 py-2 ${displayState === DisplayState.TypingResult ? 'bg-emerald-500 text-white' : 'bg-gray-300 text-gray-700'} rounded-lg shadow-md hover:bg-emerald-600`}
+            onClick={switchToTypingResult}
+          >
+            タイピング結果
+          </button>
+          <button
+            className={`px-4 py-2 ${displayState === DisplayState.SleepTimeDisplay ? 'bg-emerald-500 text-white' : 'bg-gray-300 text-gray-700'} rounded-lg shadow-md hover:bg-emerald-600`}
+            onClick={switchToSleepTimeDisplay}
+          >
+            睡眠時間表示
+          </button>
+        </div>
+      </header>
       <div className="bg-white shadow-xl rounded-lg p-6">
-        {keys.length > 0 ? (
-          <>
-            <p className="text-3xl font-extrabold mb-4">本日のタイピング合計数: <span className="text-5xl text-emerald-500">{todayTypingCount}</span></p>
-            <p className="text-xl font-semibold mb-2">昨日との差分: <span className={diffFromYesterday >= 0 ? "text-blue-500" : "text-red-500"}>{diffWithSign}</span></p>
-            <DataVisualization data={keys} />
-          </>
+        {/* 現在の表示状態に応じてコンポーネントを描画 */}
+        {displayState === DisplayState.TypingResult ? (
+          keys.length > 0 ? (
+            <>
+              <p className="text-3xl font-extrabold mb-4">本日のタイピング合計数: <span className="text-5xl text-emerald-500">{todayTypingCount}</span></p>
+              <p className="text-xl font-semibold mb-2">昨日との差分: <span className={diffFromYesterday >= 0 ? "text-blue-500" : "text-red-500"}>{diffWithSign}</span></p>
+              <DataVisualization data={keys} />
+            </>
+          ) : (
+            <p>データを読み込んでいます...</p>
+          )
         ) : (
-          <p>データを読み込んでいます...</p>
+          <SleepTimeDisplay />
         )}
       </div>
     </div>
