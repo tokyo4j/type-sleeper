@@ -21,12 +21,18 @@ ChartJS.register(
   Legend
 );
 
+interface GroupedData {
+  [key: number]: {
+    total: number;
+    timestamp: number;
+  };
+}
+
 interface DataVisualizationProps {
   data: { user_code: number; timestamp: number; count: number }[];
 }
 
 function DataVisualization({ data }: DataVisualizationProps) {
-  // 明示的な型定義を用いたuseStateの初期化
   const [chartData, setChartData] = useState<{
     labels: string[];
     datasets: Array<{
@@ -48,11 +54,27 @@ function DataVisualization({ data }: DataVisualizationProps) {
   });
 
   useEffect(() => {
-    const timestamps = data.map(item => new Date(item.timestamp * 1000).toLocaleString());
-    const counts = data.map(item => item.count);
+    // 5分間隔でデータをグループ化し、合計を計算する
+    const groupedData: GroupedData = data.reduce<GroupedData>((acc, { timestamp, count }) => {
+      // 各データポイントを5分間隔のキーにマッピング
+      const date = new Date(timestamp);
+      const key = new Date(date.getFullYear(), date.getMonth(), date.getDate(), date.getHours(), Math.floor(date.getMinutes() / 5) * 5).getTime();
+
+      if (!acc[key]) {
+        acc[key] = { total: 0, timestamp: key };
+      }
+
+      acc[key].total += count;
+
+      return acc;
+    }, {});
+
+    const timestamps = Object.keys(groupedData).map(Number).sort((a, b) => a - b); // タイムスタンプでソート
+    const counts = timestamps.map(key => groupedData[key].total);
+    const labels = timestamps.map(timestamp => new Date(timestamp).toLocaleString());
 
     setChartData({
-      labels: timestamps,
+      labels,
       datasets: [
         {
           ...chartData.datasets[0],
