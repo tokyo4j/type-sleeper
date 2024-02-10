@@ -60,7 +60,7 @@ const Index = () => {
     <div className="min-h-screen bg-gray-100 p-8">
       <h1 className="text-3xl font-bold text-emerald-500 mb-4">タイピングの結果</h1>
       <p className="mb-8 text-lg text-gray-700">
-        タイピング速度を可視化するグラフを表示します。
+        タイピング数を可視化するグラフを表示します。
       </p>
       <div className="bg-white shadow-xl rounded-lg p-6">
         {keys.length > 0 ? (

@@ -45,7 +45,7 @@ function DataVisualization({ data }: DataVisualizationProps) {
     labels: [],
     datasets: [
       {
-        label: "Count Over Time",
+        label: "タイピング数",
         borderColor: "rgb(75, 192, 192)",
         backgroundColor: "rgba(75, 192, 192, 0.5)",
         data: [],
