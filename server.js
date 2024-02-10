@@ -83,10 +83,12 @@ app.post("/key", (req, res) => {
 });
 
 app.get("/key", (req, res) => {
-  authenticate(req, res);
-  db.all("SELECT * FROM keys", (err, rows) => {
-    res.status(200).json(rows);
-  });
+  const user_code = authenticate(req, res);
+  if (user_code) {
+    db.all("SELECT * FROM keys WHERE user_code = ?", user_code, (err, rows) => {
+      res.status(200).json(rows);
+    });
+  }
 });
 
 app.post("/login", (req, res) => {
