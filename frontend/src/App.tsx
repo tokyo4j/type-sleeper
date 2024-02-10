@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
+import DataVisualization from "./components/DataVisualization"; // DataVisualizationコンポーネントをインポート
 
 async function login(user_code: string, password: string) {
   return await fetch("http://localhost:8080/login", {
@@ -14,6 +15,8 @@ async function login(user_code: string, password: string) {
 }
 
 function App() {
+  const [data, setData] = useState(null); // フェッチされたデータを保持するためのステート
+
   useEffect(() => {
     const user_code = prompt("User code:")!;
     const password = prompt("Password:")!;
@@ -27,10 +30,10 @@ function App() {
       )
       .then((res) => res.json())
       .then((res) => {
-        document.body.prepend(JSON.stringify(res));
+        // データをステートにセット
+        setData(res);
       });
   }, []);
-  const [count, setCount] = useState(0);
 
   return (
     <>
@@ -44,16 +47,17 @@ function App() {
       </div>
       <h1>Vite + React</h1>
       <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
+        {/* <button onClick={() => setCount((count) => count + 1)}>
           count is {count}
         </button>
         <p>
           Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
+        </p> */}
       </div>
       <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
+        タイピング速度を可視化するグラフを表示します。
       </p>
+      {data && <DataVisualization data={data} />} {/* フェッチされたデータがある場合にのみDataVisualizationコンポーネントを表示 */}
     </>
   );
 }
