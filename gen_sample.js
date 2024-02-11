@@ -20,7 +20,7 @@ if (!fs.existsSync("./test.db")) {
     db.run(
       "CREATE TABLE users(user_code INT, password VARCHAR(64), user_name VARCHAR(64))"
     );
-    db.run("INSERT INTO users VALUES(999, 'pass', 'admin')");
+    db.run("INSERT INTO users VALUES(999, 'pass', 'わたる')");
 
     db.run(
       "CREATE TABLE sites(user_code INT, name VARCHAR(64), start INT, end INT)"

@@ -189,12 +189,19 @@ app.post("/sleep", (req, res) => {
     console.log(user_code, sleeps[user_code], now);
     delete sleeps[user_code];
   }
+  res.send("ok");
 });
 
 app.get("/sleeps", (req, res) => {
   const user_code = authenticate(req, res);
   if (!user_code) return;
   db.all("SELECT * FROM sleeps WHERE user_code = ?", user_code, (err, rows) => {
+    if (sleeps[user_code]) {
+      rows.push({
+        user_code,
+        start: sleeps[user_code],
+      });
+    }
     res.status(200).json(rows);
   });
 });
