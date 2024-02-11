@@ -9,7 +9,6 @@ const cors = require("cors");
 const SECRET = "foobar";
 const OPTIONS = {
   algorithm: "HS256",
-  expiresIn: "10m",
 };
 
 require("./gen_sample.js");
@@ -71,7 +70,7 @@ app.get("/keys", (req, res) => {
 
 app.post("/login", (req, res) => {
   db.all(
-    "SELECT password FROM users WHERE user_code = ?",
+    "SELECT user_name, password FROM users WHERE user_code = ?",
     req.body.user_code,
     (err, rows) => {
       if (!rows || rows.length != 1 || rows[0].password != req.body.password) {
@@ -83,7 +82,10 @@ app.post("/login", (req, res) => {
         SECRET,
         OPTIONS
       );
-      res.status(200).cookie("token", token).json({ token });
+      res
+        .status(200)
+        .cookie("token", token)
+        .json({ token, user_name: rows[0].user_name });
     }
   );
 });

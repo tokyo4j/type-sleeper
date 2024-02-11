@@ -10,22 +10,30 @@ const Login = () => {
   return (
     <div className="min-h-screen flex justify-center items-center bg-sky-100">
       <div className="bg-white p-8 rounded-lg shadow-md w-full max-w-md">
-        <h2 className="text-3xl mb-6 text-center font-semibold text-gray-800">Login</h2>
+        <h2 className="text-3xl mb-6 text-center font-semibold text-gray-800">
+          Login
+        </h2>
         <form
           onSubmit={async (e) => {
             e.preventDefault();
             try {
-              const { token } = (await fetch("http://localhost:8080/login", {
-                headers: {
-                  "Content-Type": "application/json",
-                },
-                body: JSON.stringify({ user_code: userCode, password }),
-                method: "POST",
-              }).then((res) => res.json())) as { token: string };
+              const { user_name } = (await fetch(
+                "http://localhost:8080/login",
+                {
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                  body: JSON.stringify({ user_code: userCode, password }),
+                  method: "POST",
+                }
+              ).then((res) => res.json())) as {
+                token: string;
+                user_name: string;
+              };
 
               setError("");
 
-              document.cookie = `token=${token}`;
+              localStorage.setItem("user_name", user_name);
               document.location.href = "/";
             } catch {
               setError("Login failed");
@@ -33,7 +41,10 @@ const Login = () => {
           }}
         >
           <div className="mb-4">
-            <label htmlFor="user-code" className="block text-gray-700 text-sm font-medium mb-2">
+            <label
+              htmlFor="user-code"
+              className="block text-gray-700 text-sm font-medium mb-2"
+            >
               User Code
             </label>
             <input
@@ -46,7 +57,10 @@ const Login = () => {
             />
           </div>
           <div className="mb-6">
-            <label htmlFor="password" className="block text-gray-700 text-sm font-medium mb-2">
+            <label
+              htmlFor="password"
+              className="block text-gray-700 text-sm font-medium mb-2"
+            >
               Password
             </label>
             <input
