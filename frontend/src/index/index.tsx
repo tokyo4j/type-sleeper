@@ -2,7 +2,8 @@ import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom/client";
 import "../index.css";
 import DataVisualization from "../components/DataVisualization";
-import SleepTimeDisplay from "../components/SleepTimeDisplay"; // 新しいコンポーネントをインポート
+import SleepTimeDisplay from "../components/SleepTimeDisplay";
+import SocialMediaTimeDisplay from "../components/SocialMediaTimeDisplay"; // 新しいコンポーネントをインポート
 
 interface KeyData {
   user_code: number;
@@ -12,7 +13,8 @@ interface KeyData {
 
 enum DisplayState {
   TypingResult,
-  SleepTimeDisplay
+  SleepTimeDisplay,
+  SocialMediaTimeDisplay // 新しいページの状態を追加
 }
 
 const Index = () => {
@@ -73,11 +75,16 @@ const Index = () => {
     setDisplayState(DisplayState.SleepTimeDisplay);
   };
 
+  // SNS等の使用時間表示画面へ切り替える
+  const switchToSocialMediaTimeDisplay = () => {
+    setDisplayState(DisplayState.SocialMediaTimeDisplay);
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 p-8">
       {/* ヘッダー部分 */}
       <header className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-emerald-500">タイピング & スリープ</h1>
+        <h1 className="text-3xl font-bold text-emerald-500">Life Visualizer</h1>
         {/* ボタンをクリックして各画面に切り替え */}
         <div>
           <button
@@ -87,10 +94,16 @@ const Index = () => {
             タイピング結果
           </button>
           <button
-            className={`px-4 py-2 ${displayState === DisplayState.SleepTimeDisplay ? 'bg-emerald-500 text-white' : 'bg-gray-300 text-gray-700'} rounded-lg shadow-md hover:bg-emerald-600`}
+            className={`mr-4 px-4 py-2 ${displayState === DisplayState.SleepTimeDisplay ? 'bg-emerald-500 text-white' : 'bg-gray-300 text-gray-700'} rounded-lg shadow-md hover:bg-emerald-600`}
             onClick={switchToSleepTimeDisplay}
           >
             睡眠時間表示
+          </button>
+          <button
+            className={`px-4 py-2 ${displayState === DisplayState.SocialMediaTimeDisplay ? 'bg-emerald-500 text-white' : 'bg-gray-300 text-gray-700'} rounded-lg shadow-md hover:bg-emerald-600`}
+            onClick={switchToSocialMediaTimeDisplay}
+          >
+            SNS等の使用時間表示
           </button>
         </div>
       </header>
@@ -106,8 +119,10 @@ const Index = () => {
           ) : (
             <p>データを読み込んでいます...</p>
           )
-        ) : (
+        ) : displayState === DisplayState.SleepTimeDisplay ? (
           <SleepTimeDisplay />
+        ) : (
+          <SocialMediaTimeDisplay />
         )}
       </div>
     </div>
