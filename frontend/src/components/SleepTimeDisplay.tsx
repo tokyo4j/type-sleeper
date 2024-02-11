@@ -18,9 +18,10 @@ interface SleepData {
 const SleepTimeDisplay: React.FC = () => {
   const [sleeps, setSleeps] = useState<SleepData[]>([]);
   const [chartData, setChartData] = useState<any[]>([]);
+  const [awake, setAwake] = useState<boolean>(true);
 
-  useEffect(() => {
-    fetch("/sleeps")
+  function syncSleeps() {
+    return fetch("/sleeps")
       .then((res) => res.json())
       .then((data) => {
         const sortedData = data.sort(
@@ -28,8 +29,13 @@ const SleepTimeDisplay: React.FC = () => {
         );
         setSleeps(sortedData);
         setChartData(processChartData(sortedData));
+        setAwake(data.at(-1).end);
       })
       .catch((error) => console.error("Error fetching sleep data:", error));
+  }
+
+  useEffect(() => {
+    syncSleeps();
   }, []);
 
   const processChartData = (sleeps: SleepData[]) => {
@@ -58,57 +64,52 @@ const SleepTimeDisplay: React.FC = () => {
   };
 
   const handleSleep = () => {
-    const start = Date.now(); // Current timestamp
-    const end = null; // Assuming end time is not known yet
-    const newSleep: SleepData = { user_code: 1, start, end }; // Replace user_code with appropriate value
-    setSleeps([...sleeps, newSleep]); // Add new sleep entry to local state
-    // Perform API call to add sleep data to the database
-    fetch("/addSleep", {
-      method: "POST",
+    fetch("/sleep", {
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
-      body: JSON.stringify(newSleep),
-    })
-      .then((res) => res.json())
-      .then((data) => console.log("Sleep data added:", data))
-      .catch((error) => console.error("Error adding sleep data:", error));
+      method: "POST",
+      body: JSON.stringify({ type: "start" }),
+    }).then((res) => {
+      if (res.ok) {
+        syncSleeps();
+      }
+    });
   };
 
   const handleWakeUp = () => {
-    const index = sleeps.length - 1; // Assuming we are waking up from the latest sleep entry
-    const updatedSleeps = [...sleeps];
-    updatedSleeps[index].end = Date.now(); // Update end time to current timestamp
-    setSleeps(updatedSleeps); // Update local state with end time
-    // Perform API call to update sleep data in the database
-    fetch(`/updateSleep/${sleeps[index].user_code}`, {
-      method: "PUT",
+    fetch("/sleep", {
       headers: {
-        "Content-Type": "application/json",
+        "content-type": "application/json",
       },
-      body: JSON.stringify(updatedSleeps[index]),
-    })
-      .then((res) => res.json())
-      .then((data) => console.log("Sleep data updated:", data))
-      .catch((error) => console.error("Error updating sleep data:", error));
+      method: "POST",
+      body: JSON.stringify({ type: "end" }),
+    }).then((res) => {
+      if (res.ok) {
+        syncSleeps();
+      }
+    });
   };
 
   return (
-    <div className="flex flex-col items-center justify-center p-4">
+    <div className="flex flex-col items-center justify-center p-4 ">
       <h2 className="text-2xl font-semibold mb-6">睡眠時間</h2>
       <div className="flex justify-center space-x-4">
-        <button
-          onClick={handleSleep}
-          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        >
-          就寝
-        </button>
-        <button
-          onClick={handleWakeUp}
-          className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
-        >
-          起床
-        </button>
+        {awake ? (
+          <button
+            onClick={handleSleep}
+            className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+          >
+            就寝
+          </button>
+        ) : (
+          <button
+            onClick={handleWakeUp}
+            className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+          >
+            起床
+          </button>
+        )}
       </div>
       <div className="w-full lg:w-3/4 xl:w-1/2">
         <BarChart
