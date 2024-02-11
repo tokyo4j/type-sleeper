@@ -53,25 +53,42 @@ function DataVisualization({ data }: DataVisualizationProps) {
     ],
   });
 
-  useEffect(() => {
-    if (data.length === 0) return; // データが空の場合は処理を終了
+  const [todayTotalTypings, setTodayTotalTypings] = useState<number>(0);
+  const [totalTypings, setTotalTypings] = useState<number>(0);
+  const [differenceFromYesterday, setDifferenceFromYesterday] = useState<number>(0);
 
-    // 本日の開始と終了のタイムスタンプを取得
+  useEffect(() => {
+    if (data.length === 0) return;
+
     const todayStartTimestamp = new Date().setHours(0, 0, 0, 0);
     const todayEndTimestamp = new Date().setHours(23, 59, 59, 999);
 
-    // 本日のデータを抽出
-    const filteredData = data.filter(({ timestamp }) => timestamp >= todayStartTimestamp && timestamp <= todayEndTimestamp);
+    // 昨日の日付を設定
+    const yesterdayDate = new Date();
+    yesterdayDate.setDate(yesterdayDate.getDate() - 1);
 
-    if (filteredData.length === 0) return; // 今日のデータがない場合は処理を終了
+    // 昨日の開始時刻と終了時刻を正しく設定
+    const yesterdayStartTimestamp = new Date(yesterdayDate).setHours(0, 0, 0, 0);
+    const yesterdayEndTimestamp = new Date(yesterdayDate).setHours(23, 59, 59, 999);
 
-    // timestampの最小値と最大値を取得
-    const minTimestamp = todayStartTimestamp;
-    const maxTimestamp = todayEndTimestamp;
+    const total = data.reduce((acc, { count }) => acc + count, 0);
+    setTotalTypings(total);
 
-    // 1時間ごとのグループ化し、合計を計算する
+    const todayData = data.filter(({ timestamp }) => timestamp >= todayStartTimestamp && timestamp <= todayEndTimestamp);
+    const todayTotal = todayData.reduce((acc, { count }) => acc + count, 0);
+    setTodayTotalTypings(todayTotal);
+
+    const yesterdayData = data.filter(({ timestamp }) => timestamp >= yesterdayStartTimestamp && timestamp <= yesterdayEndTimestamp);
+    const yesterdayTotal = yesterdayData.reduce((acc, { count }) => acc + count, 0);
+    const difference = todayTotal - yesterdayTotal;
+    setDifferenceFromYesterday(difference);
+
+    const filteredData = todayData;
+
+    if (filteredData.length === 0) return;
+
     const groupedData: GroupedData = filteredData.reduce<GroupedData>((acc, { timestamp, count }) => {
-      const key = Math.floor((timestamp - minTimestamp) / (60 * 60 * 1000)) * (60 * 60 * 1000) + minTimestamp;
+      const key = Math.floor((timestamp - todayStartTimestamp) / (60 * 60 * 1000)) * (60 * 60 * 1000) + todayStartTimestamp;
 
       if (!acc[key]) {
         acc[key] = { total: 0, timestamp: key };
@@ -82,13 +99,12 @@ function DataVisualization({ data }: DataVisualizationProps) {
       return acc;
     }, {});
 
-    // タイムスタンプの範囲内で1時間ごとのデータを生成
     const timestamps: number[] = [];
-    for (let time = minTimestamp; time <= maxTimestamp; time += 60 * 60 * 1000) {
+    for (let time = todayStartTimestamp; time <= todayEndTimestamp; time += 60 * 60 * 1000) {
       timestamps.push(time);
     }
 
-    const counts = timestamps.map(timestamp => groupedData[timestamp]?.total ?? 0); // もしデータがない場合は0をセットする
+    const counts = timestamps.map(timestamp => groupedData[timestamp]?.total ?? 0);
     const labels = timestamps.map(timestamp => new Date(timestamp).toLocaleString());
 
     setChartData({
@@ -100,9 +116,33 @@ function DataVisualization({ data }: DataVisualizationProps) {
         },
       ],
     });
-  }, [data]); // dataが変更された場合にのみこのeffectを実行
+  }, [data]);
 
-  return <Line data={chartData} />;
+  return (
+  <>
+    <div className="p-4">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="p-4 shadow rounded-lg text-center bg-white">
+          <div className="text-xl font-semibold">本日のタイピング数</div>
+          <div className="text-3xl text-blue-500">{todayTotalTypings}</div>
+        </div>
+        <div className="p-4 shadow rounded-lg text-center bg-white">
+          <div className="text-xl font-semibold">総タイピング数</div>
+          <div className="text-3xl text-green-500">{totalTypings}</div>
+        </div>
+        <div className="p-4 shadow rounded-lg text-center bg-white">
+          <div className="text-xl font-semibold">昨日との差分</div>
+          <div className={`text-3xl ${differenceFromYesterday >= 0 ? 'text-blue-500' : 'text-red-500'}`}>
+            {differenceFromYesterday}
+          </div>
+        </div>
+      </div>
+      <div className="mt-8">
+        <Line data={chartData} />
+      </div>
+    </div>
+  </>
+  );
 }
 
 export default DataVisualization;
