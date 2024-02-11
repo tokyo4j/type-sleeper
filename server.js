@@ -32,10 +32,10 @@ if (!fs.existsSync("./test.db")) {
               (999, ${new Date(2023, 2, 10, 0, 0, 10).getTime()}, 3),
               (999, ${new Date(2023, 2, 10, 0, 0, 15).getTime()}, 5)
           `);
-    db.all("SELECT * FROM users;", (err, rows) => {
+    db.all("SELECT * FROM users", (err, rows) => {
       console.log("users:", rows);
     });
-    db.all("SELECT * FROM keys;", (err, rows) => {
+    db.all("SELECT * FROM keys", (err, rows) => {
       console.log("keys:", rows);
     });
   });
@@ -65,8 +65,8 @@ function authenticate(req, res) {
 }
 
 app.get("/", (req, res) => {
-  if (authenticate(req, res))
-    res.sendFile(__dirname + "/frontend/dist/src/index/index.html");
+  if (!authenticate(req, res)) return;
+  res.sendFile(__dirname + "/frontend/dist/src/index/index.html");
 });
 
 app.get("/login", (req, res) => {
@@ -77,24 +77,22 @@ app.use(express.static("frontend/dist"));
 
 app.post("/key", (req, res) => {
   const user_code = authenticate(req, res);
-  if (user_code) {
-    db.run(
-      "INSERT INTO keys VALUES (?, ?, ?)",
-      user_code,
-      req.body.timestamp,
-      req.body.count
-    );
-    res.send("ok");
-  }
+  if (!user_code) return;
+  db.run(
+    "INSERT INTO keys VALUES (?, ?, ?)",
+    user_code,
+    req.body.timestamp,
+    req.body.count
+  );
+  res.send("ok");
 });
 
 app.get("/key", (req, res) => {
   const user_code = authenticate(req, res);
-  if (user_code) {
-    db.all("SELECT * FROM keys WHERE user_code = ?", user_code, (err, rows) => {
-      res.status(200).json(rows);
-    });
-  }
+  if (!user_code) return;
+  db.all("SELECT * FROM keys WHERE user_code = ?", user_code, (err, rows) => {
+    res.status(200).json(rows);
+  });
 });
 
 app.post("/login", (req, res) => {
