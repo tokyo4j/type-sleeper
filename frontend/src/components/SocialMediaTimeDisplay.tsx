@@ -72,7 +72,7 @@ const SocialMediaTimeDisplay: React.FC = () => {
           <YAxis />
           <Tooltip />
           <Legend />
-          <Bar dataKey="twitter" fill="#1DA1F2" />
+          <Bar dataKey="twitter" fill="#00ACEE" name="X (旧twitter)" />
           <Bar dataKey="youtube" fill="#FF0000" />
         </BarChart>
       </div>

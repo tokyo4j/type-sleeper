@@ -122,7 +122,7 @@ const SleepTimeDisplay: React.FC = () => {
           <YAxis />
           <Tooltip />
           <Legend />
-          <Bar dataKey="sleepHours" fill="#8884d8" />
+          <Bar dataKey="sleepHours" fill="#8884d8" name="睡眠時間" />
         </BarChart>
       </div>
       <div className="w-full lg:w-3/4 xl:w-1/2 mb-8">

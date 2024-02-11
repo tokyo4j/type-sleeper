@@ -17,6 +17,8 @@ enum DisplayState {
   SocialMediaTimeDisplay,
 }
 
+const user_name = localStorage.getItem("user_name");
+
 const Index = () => {
   const [keys, setKeys] = useState<KeyData[]>([]);
   const [displayState, setDisplayState] = useState(DisplayState.TypingResult);
@@ -77,7 +79,7 @@ const Index = () => {
               : "text-orange-500"
           }`}
         >
-          Life Visualizer
+          Life Visualizer {user_name && `(${user_name})`}
         </h1>
         <div>
           <button
