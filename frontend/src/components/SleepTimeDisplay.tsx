@@ -92,7 +92,9 @@ const SleepTimeDisplay: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center p-4 ">
+    <div
+      className={`flex flex-col items-center justify-center shadow-xl rounded-lg p-6 bg-white`}
+    >
       <h2 className="text-2xl font-semibold mb-6">睡眠時間</h2>
       <div className="flex justify-center space-x-4">
         {awake ? (

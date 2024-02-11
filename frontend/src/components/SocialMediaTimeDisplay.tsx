@@ -58,7 +58,7 @@ const SocialMediaTimeDisplay: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center p-4">
+    <div className="flex flex-col items-center justify-center bg-white shadow-xl rounded-lg p-6">
       <h2 className="text-2xl font-semibold mb-6">SNS等の使用時間</h2>
       <div className="w-full lg:w-3/4 xl:w-1/2">
         <BarChart

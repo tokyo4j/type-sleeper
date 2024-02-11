@@ -114,15 +114,13 @@ const Index = () => {
           </button>
         </div>
       </header>
-      <div className="bg-white shadow-xl rounded-lg p-6">
-        {displayState === DisplayState.TypingResult && (
-          <DataVisualization data={keys} />
-        )}
-        {displayState === DisplayState.SleepTimeDisplay && <SleepTimeDisplay />}
-        {displayState === DisplayState.SocialMediaTimeDisplay && (
-          <SocialMediaTimeDisplay />
-        )}
-      </div>
+      {displayState === DisplayState.TypingResult && (
+        <DataVisualization data={keys} />
+      )}
+      {displayState === DisplayState.SleepTimeDisplay && <SleepTimeDisplay />}
+      {displayState === DisplayState.SocialMediaTimeDisplay && (
+        <SocialMediaTimeDisplay />
+      )}
     </div>
   );
 };
