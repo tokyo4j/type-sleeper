@@ -12,36 +12,8 @@ const OPTIONS = {
   expiresIn: "10m",
 };
 
+require("./gen_sample.js");
 const db = new sqlite.Database("./test.db");
-if (!fs.existsSync("./test.db")) {
-  db.serialize(() => {
-    db.run(
-      "CREATE TABLE IF NOT EXISTS keys(user_code INT, timestamp INT, count INT)"
-    );
-    db.run(
-      "CREATE TABLE IF NOT EXISTS users(user_code INT, password VARCHAR(64), user_name VARCHAR(64))"
-    );
-    db.run(
-      "CREATE TABLE IF NOT EXISTS sites(user_code INT, name VARCHAR(64), start INT, end INT)"
-    );
-    db.run(
-      "CREATE TABLE IF NOT EXISTS sleeps(user_code INT, start INT, end INT)"
-    );
-    db.run("INSERT INTO users VALUES(999, 'pass', 'admin')");
-    db.run(`INSERT INTO keys VALUES
-              (999, ${new Date(2023, 2, 10, 0, 0, 0).getTime()}, 4),
-              (999, ${new Date(2023, 2, 10, 0, 0, 5).getTime()}, 2),
-              (999, ${new Date(2023, 2, 10, 0, 0, 10).getTime()}, 3),
-              (999, ${new Date(2023, 2, 10, 0, 0, 15).getTime()}, 5)
-          `);
-    db.all("SELECT * FROM users", (err, rows) => {
-      console.log("users:", rows);
-    });
-    db.all("SELECT * FROM keys", (err, rows) => {
-      console.log("keys:", rows);
-    });
-  });
-}
 
 const app = express();
 const PORT = 8080;
@@ -102,7 +74,7 @@ app.post("/login", (req, res) => {
     "SELECT password FROM users WHERE user_code = ?",
     req.body.user_code,
     (err, rows) => {
-      if (rows.length != 1 || rows[0].password != req.body.password) {
+      if (!rows || rows.length != 1 || rows[0].password != req.body.password) {
         res.status(401).send("Login failed");
         return;
       }
