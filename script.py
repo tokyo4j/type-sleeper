@@ -31,7 +31,7 @@ while True:
         "http://localhost:8080/key",
         headers={"authorization": token},
         json={
-            "timestamp": int(datetime.now().timestamp()),
+            "timestamp": int(datetime.now().timestamp() * 1000),
             "count": count,
         },
     )
