@@ -16,8 +16,9 @@ const SocialMediaTimeDisplay: React.FC = () => {
     fetch("/sites")
       .then(res => res.json())
       .then(data => {
-        setSites(data);
-        setChartData(processChartData(data));
+        const sortedData = data.sort((a: SiteData, b: SiteData) => a.start - b.start);
+        setSites(sortedData);
+        setChartData(processChartData(sortedData));
       })
       .catch(error => console.error("Error fetching site data:", error));
   }, []);
