@@ -53,9 +53,9 @@ const Index = () => {
   const diffWithSign = diffFromYesterday >= 0 ? `+${diffFromYesterday}` : diffFromYesterday.toString();
 
   return (
-    <div className="min-h-screen bg-gray-100 p-8">
+    <div className={`min-h-screen ${displayState === DisplayState.TypingResult ? 'bg-green-100' : displayState === DisplayState.SleepTimeDisplay ? 'bg-blue-100' : 'bg-orange-100'} p-8`}>
       <header className="flex justify-between items-center mb-8">
-        <h1 className="text-3xl font-bold text-emerald-500">Life Visualizer</h1>
+        <h1 className={`text-3xl font-bold ${displayState === DisplayState.TypingResult ? 'text-green-500' : displayState === DisplayState.SleepTimeDisplay ? 'text-blue-500' : 'text-orange-500'}`}>Life Visualizer</h1>
         <div>
           <button className={`mr-4 px-4 py-2 ${displayState === DisplayState.TypingResult ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-700'} rounded-lg shadow-md hover:bg-green-600`} onClick={() => setDisplayState(DisplayState.TypingResult)}>タイピング結果</button>
           <button className={`mr-4 px-4 py-2 ${displayState === DisplayState.SleepTimeDisplay ? 'bg-blue-300 text-white' : 'bg-gray-300 text-gray-700'} rounded-lg shadow-md hover:bg-blue-400`} onClick={() => setDisplayState(DisplayState.SleepTimeDisplay)}>睡眠時間表示</button>
@@ -69,7 +69,6 @@ const Index = () => {
       </div>
     </div>
   );
-
 };
 
 const rootElement = document.getElementById("root");
