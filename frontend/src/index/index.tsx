@@ -57,9 +57,9 @@ const Index = () => {
       <header className="flex justify-between items-center mb-8">
         <h1 className="text-3xl font-bold text-emerald-500">Life Visualizer</h1>
         <div>
-          <button className={`mr-4 px-4 py-2 ${displayState === DisplayState.TypingResult ? 'bg-emerald-500 text-white' : 'bg-gray-300 text-gray-700'} rounded-lg shadow-md hover:bg-emerald-600`} onClick={() => setDisplayState(DisplayState.TypingResult)}>タイピング結果</button>
-          <button className={`mr-4 px-4 py-2 ${displayState === DisplayState.SleepTimeDisplay ? 'bg-emerald-500 text-white' : 'bg-gray-300 text-gray-700'} rounded-lg shadow-md hover:bg-emerald-600`} onClick={() => setDisplayState(DisplayState.SleepTimeDisplay)}>睡眠時間表示</button>
-          <button className={`px-4 py-2 ${displayState === DisplayState.SocialMediaTimeDisplay ? 'bg-emerald-500 text-white' : 'bg-gray-300 text-gray-700'} rounded-lg shadow-md hover:bg-emerald-600`} onClick={() => setDisplayState(DisplayState.SocialMediaTimeDisplay)}>SNS等の使用時間表示</button>
+          <button className={`mr-4 px-4 py-2 ${displayState === DisplayState.TypingResult ? 'bg-green-500 text-white' : 'bg-gray-300 text-gray-700'} rounded-lg shadow-md hover:bg-green-600`} onClick={() => setDisplayState(DisplayState.TypingResult)}>タイピング結果</button>
+          <button className={`mr-4 px-4 py-2 ${displayState === DisplayState.SleepTimeDisplay ? 'bg-blue-300 text-white' : 'bg-gray-300 text-gray-700'} rounded-lg shadow-md hover:bg-blue-400`} onClick={() => setDisplayState(DisplayState.SleepTimeDisplay)}>睡眠時間表示</button>
+          <button className={`px-4 py-2 ${displayState === DisplayState.SocialMediaTimeDisplay ? 'bg-orange-500 text-white' : 'bg-gray-300 text-gray-700'} rounded-lg shadow-md hover:bg-orange-600`} onClick={() => setDisplayState(DisplayState.SocialMediaTimeDisplay)}>SNS等の使用時間表示</button>
         </div>
       </header>
       <div className="bg-white shadow-xl rounded-lg p-6">
@@ -69,6 +69,7 @@ const Index = () => {
       </div>
     </div>
   );
+
 };
 
 const rootElement = document.getElementById("root");
