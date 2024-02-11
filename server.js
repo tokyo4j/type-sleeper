@@ -89,7 +89,7 @@ app.post("/key", (req, res) => {
   res.send("ok");
 });
 
-app.get("/key", (req, res) => {
+app.get("/keys", (req, res) => {
   const user_code = authenticate(req, res);
   if (!user_code) return;
   db.all("SELECT * FROM keys WHERE user_code = ?", user_code, (err, rows) => {
@@ -111,7 +111,7 @@ app.post("/login", (req, res) => {
         SECRET,
         OPTIONS
       );
-      res.status(200).json({ token });
+      res.status(200).cookie("token", token).json({ token });
     }
   );
 });
@@ -186,7 +186,7 @@ setInterval(() => {
   }
 }, 5000);
 
-app.get("/site", (req, res) => {
+app.get("/sites", (req, res) => {
   const user_code = authenticate(req, res);
   if (!user_code) return;
   db.all("SELECT * FROM sites WHERE user_code = ?", user_code, (err, rows) => {
@@ -217,7 +217,7 @@ app.post("/sleep", (req, res) => {
   }
 });
 
-app.get("/sleep", (req, res) => {
+app.get("/sleeps", (req, res) => {
   const user_code = authenticate(req, res);
   if (!user_code) return;
   db.all("SELECT * FROM sleeps WHERE user_code = ?", user_code, (err, rows) => {
