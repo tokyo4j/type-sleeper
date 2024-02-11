@@ -1,5 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import React, { useEffect, useState } from "react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from "recharts";
 
 interface SiteData {
   user_code: number;
@@ -14,20 +22,24 @@ const SocialMediaTimeDisplay: React.FC = () => {
 
   useEffect(() => {
     fetch("/sites")
-      .then(res => res.json())
-      .then(data => {
-        const sortedData = data.sort((a: SiteData, b: SiteData) => a.start - b.start);
+      .then((res) => res.json())
+      .then((data) => {
+        const sortedData = data.sort(
+          (a: SiteData, b: SiteData) => a.start - b.start
+        );
         setSites(sortedData);
         setChartData(processChartData(sortedData));
       })
-      .catch(error => console.error("Error fetching site data:", error));
+      .catch((error) => console.error("Error fetching site data:", error));
   }, []);
 
   // サイトデータを処理してチャート用のデータを生成
   const processChartData = (sites: SiteData[]) => {
-    const dataMap: { [key: string]: { name: string; twitter?: number; youtube?: number } } = {};
+    const dataMap: {
+      [key: string]: { name: string; twitter?: number; youtube?: number };
+    } = {};
 
-    sites.forEach(site => {
+    sites.forEach((site) => {
       const date = new Date(site.start).toLocaleDateString();
       const duration = (site.end - site.start) / 3600000; // 時間に変換
 
@@ -35,9 +47,9 @@ const SocialMediaTimeDisplay: React.FC = () => {
         dataMap[date] = { name: date };
       }
 
-      if (site.name === 'twitter.com') {
+      if (site.name === "twitter.com") {
         dataMap[date].twitter = (dataMap[date].twitter || 0) + duration;
-      } else if (site.name === 'youtube.com') {
+      } else if (site.name === "youtube.com") {
         dataMap[date].youtube = (dataMap[date].youtube || 0) + duration;
       }
     });
@@ -82,10 +94,11 @@ const SocialMediaTimeDisplay: React.FC = () => {
             </thead>
             <tbody>
               {sites.map((site, index) => (
-                <tr key={index} className="border-b border-gray-200 hover:bg-gray-100">
-                  <td className="px-5 py-2 text-sm">
-                    {site.name}
-                  </td>
+                <tr
+                  key={index}
+                  className="border-b border-gray-200 hover:bg-gray-100"
+                >
+                  <td className="px-5 py-2 text-sm">{site.name}</td>
                   <td className="px-5 py-2 text-sm">
                     {new Date(site.start).toLocaleString()}
                   </td>

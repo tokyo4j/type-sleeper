@@ -1,5 +1,13 @@
-import React, { useEffect, useState } from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
+import React, { useEffect, useState } from "react";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  Legend,
+} from "recharts";
 
 interface SleepData {
   user_code: number;
@@ -13,21 +21,25 @@ const SleepTimeDisplay: React.FC = () => {
 
   useEffect(() => {
     fetch("/sleeps")
-      .then(res => res.json())
-      .then(data => {
-        const sortedData = data.sort((a: SleepData, b: SleepData) => a.start - b.start);
+      .then((res) => res.json())
+      .then((data) => {
+        const sortedData = data.sort(
+          (a: SleepData, b: SleepData) => a.start - b.start
+        );
         setSleeps(sortedData);
         setChartData(processChartData(sortedData));
       })
-      .catch(error => console.error("Error fetching sleep data:", error));
+      .catch((error) => console.error("Error fetching sleep data:", error));
   }, []);
 
   const processChartData = (sleeps: SleepData[]) => {
     const dataMap: { [key: string]: { name: string; sleepHours: number } } = {};
 
-    sleeps.forEach(sleep => {
+    sleeps.forEach((sleep) => {
       const date = new Date(sleep.start).toLocaleDateString();
-      const duration = sleep.end ? (sleep.end - sleep.start) / (1000 * 60 * 60) : 0;
+      const duration = sleep.end
+        ? (sleep.end - sleep.start) / (1000 * 60 * 60)
+        : 0;
 
       if (!dataMap[date]) {
         dataMap[date] = { name: date, sleepHours: 0 };
@@ -58,9 +70,9 @@ const SleepTimeDisplay: React.FC = () => {
       },
       body: JSON.stringify(newSleep),
     })
-    .then(res => res.json())
-    .then(data => console.log("Sleep data added:", data))
-    .catch(error => console.error("Error adding sleep data:", error));
+      .then((res) => res.json())
+      .then((data) => console.log("Sleep data added:", data))
+      .catch((error) => console.error("Error adding sleep data:", error));
   };
 
   const handleWakeUp = () => {
@@ -76,19 +88,25 @@ const SleepTimeDisplay: React.FC = () => {
       },
       body: JSON.stringify(updatedSleeps[index]),
     })
-    .then(res => res.json())
-    .then(data => console.log("Sleep data updated:", data))
-    .catch(error => console.error("Error updating sleep data:", error));
+      .then((res) => res.json())
+      .then((data) => console.log("Sleep data updated:", data))
+      .catch((error) => console.error("Error updating sleep data:", error));
   };
 
   return (
     <div className="flex flex-col items-center justify-center p-4">
       <h2 className="text-2xl font-semibold mb-6">睡眠時間</h2>
       <div className="flex justify-center space-x-4">
-        <button onClick={handleSleep} className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded">
+        <button
+          onClick={handleSleep}
+          className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+        >
           就寝
         </button>
-        <button onClick={handleWakeUp} className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded">
+        <button
+          onClick={handleWakeUp}
+          className="bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded"
+        >
           起床
         </button>
       </div>
@@ -125,7 +143,10 @@ const SleepTimeDisplay: React.FC = () => {
             </thead>
             <tbody>
               {sleeps.map((sleep, index) => (
-                <tr key={index} className="border-b border-gray-200 hover:bg-gray-100">
+                <tr
+                  key={index}
+                  className="border-b border-gray-200 hover:bg-gray-100"
+                >
                   <td className="px-5 py-2 text-sm">
                     {new Date(sleep.start).toLocaleString()}
                   </td>

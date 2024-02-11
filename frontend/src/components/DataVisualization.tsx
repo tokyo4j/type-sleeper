@@ -9,7 +9,7 @@ import {
   Title,
   Tooltip,
   Legend,
-} from 'chart.js';
+} from "chart.js";
 
 ChartJS.register(
   CategoryScale,
@@ -55,7 +55,8 @@ function DataVisualization({ data }: DataVisualizationProps) {
 
   const [todayTotalTypings, setTodayTotalTypings] = useState<number>(0);
   const [totalTypings, setTotalTypings] = useState<number>(0);
-  const [differenceFromYesterday, setDifferenceFromYesterday] = useState<number>(0);
+  const [differenceFromYesterday, setDifferenceFromYesterday] =
+    useState<number>(0);
 
   useEffect(() => {
     if (data.length === 0) return;
@@ -68,18 +69,38 @@ function DataVisualization({ data }: DataVisualizationProps) {
     yesterdayDate.setDate(yesterdayDate.getDate() - 1);
 
     // 昨日の開始時刻と終了時刻を正しく設定
-    const yesterdayStartTimestamp = new Date(yesterdayDate).setHours(0, 0, 0, 0);
-    const yesterdayEndTimestamp = new Date(yesterdayDate).setHours(23, 59, 59, 999);
+    const yesterdayStartTimestamp = new Date(yesterdayDate).setHours(
+      0,
+      0,
+      0,
+      0
+    );
+    const yesterdayEndTimestamp = new Date(yesterdayDate).setHours(
+      23,
+      59,
+      59,
+      999
+    );
 
     const total = data.reduce((acc, { count }) => acc + count, 0);
     setTotalTypings(total);
 
-    const todayData = data.filter(({ timestamp }) => timestamp >= todayStartTimestamp && timestamp <= todayEndTimestamp);
+    const todayData = data.filter(
+      ({ timestamp }) =>
+        timestamp >= todayStartTimestamp && timestamp <= todayEndTimestamp
+    );
     const todayTotal = todayData.reduce((acc, { count }) => acc + count, 0);
     setTodayTotalTypings(todayTotal);
 
-    const yesterdayData = data.filter(({ timestamp }) => timestamp >= yesterdayStartTimestamp && timestamp <= yesterdayEndTimestamp);
-    const yesterdayTotal = yesterdayData.reduce((acc, { count }) => acc + count, 0);
+    const yesterdayData = data.filter(
+      ({ timestamp }) =>
+        timestamp >= yesterdayStartTimestamp &&
+        timestamp <= yesterdayEndTimestamp
+    );
+    const yesterdayTotal = yesterdayData.reduce(
+      (acc, { count }) => acc + count,
+      0
+    );
     const difference = todayTotal - yesterdayTotal;
     setDifferenceFromYesterday(difference);
 
@@ -87,25 +108,39 @@ function DataVisualization({ data }: DataVisualizationProps) {
 
     if (filteredData.length === 0) return;
 
-    const groupedData: GroupedData = filteredData.reduce<GroupedData>((acc, { timestamp, count }) => {
-      const key = Math.floor((timestamp - todayStartTimestamp) / (60 * 60 * 1000)) * (60 * 60 * 1000) + todayStartTimestamp;
+    const groupedData: GroupedData = filteredData.reduce<GroupedData>(
+      (acc, { timestamp, count }) => {
+        const key =
+          Math.floor((timestamp - todayStartTimestamp) / (60 * 60 * 1000)) *
+            (60 * 60 * 1000) +
+          todayStartTimestamp;
 
-      if (!acc[key]) {
-        acc[key] = { total: 0, timestamp: key };
-      }
+        if (!acc[key]) {
+          acc[key] = { total: 0, timestamp: key };
+        }
 
-      acc[key].total += count;
+        acc[key].total += count;
 
-      return acc;
-    }, {});
+        return acc;
+      },
+      {}
+    );
 
     const timestamps: number[] = [];
-    for (let time = todayStartTimestamp; time <= todayEndTimestamp; time += 60 * 60 * 1000) {
+    for (
+      let time = todayStartTimestamp;
+      time <= todayEndTimestamp;
+      time += 60 * 60 * 1000
+    ) {
       timestamps.push(time);
     }
 
-    const counts = timestamps.map(timestamp => groupedData[timestamp]?.total ?? 0);
-    const labels = timestamps.map(timestamp => new Date(timestamp).toLocaleString());
+    const counts = timestamps.map(
+      (timestamp) => groupedData[timestamp]?.total ?? 0
+    );
+    const labels = timestamps.map((timestamp) =>
+      new Date(timestamp).toLocaleString()
+    );
 
     setChartData({
       labels,
@@ -119,29 +154,33 @@ function DataVisualization({ data }: DataVisualizationProps) {
   }, [data]);
 
   return (
-  <>
-    <div className="p-4">
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="p-4 shadow rounded-lg text-center bg-white">
-          <div className="text-xl font-semibold">本日のタイピング数</div>
-          <div className="text-3xl text-blue-500">{todayTotalTypings}</div>
-        </div>
-        <div className="p-4 shadow rounded-lg text-center bg-white">
-          <div className="text-xl font-semibold">総タイピング数</div>
-          <div className="text-3xl text-green-500">{totalTypings}</div>
-        </div>
-        <div className="p-4 shadow rounded-lg text-center bg-white">
-          <div className="text-xl font-semibold">昨日との差分</div>
-          <div className={`text-3xl ${differenceFromYesterday >= 0 ? 'text-blue-500' : 'text-red-500'}`}>
-            {differenceFromYesterday}
+    <>
+      <div className="p-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="p-4 shadow rounded-lg text-center bg-white">
+            <div className="text-xl font-semibold">本日のタイピング数</div>
+            <div className="text-3xl text-blue-500">{todayTotalTypings}</div>
+          </div>
+          <div className="p-4 shadow rounded-lg text-center bg-white">
+            <div className="text-xl font-semibold">総タイピング数</div>
+            <div className="text-3xl text-green-500">{totalTypings}</div>
+          </div>
+          <div className="p-4 shadow rounded-lg text-center bg-white">
+            <div className="text-xl font-semibold">昨日との差分</div>
+            <div
+              className={`text-3xl ${
+                differenceFromYesterday >= 0 ? "text-blue-500" : "text-red-500"
+              }`}
+            >
+              {differenceFromYesterday}
+            </div>
           </div>
         </div>
+        <div className="mt-8">
+          <Line data={chartData} />
+        </div>
       </div>
-      <div className="mt-8">
-        <Line data={chartData} />
-      </div>
-    </div>
-  </>
+    </>
   );
 }
 
