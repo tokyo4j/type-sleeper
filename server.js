@@ -194,6 +194,37 @@ app.get("/site", (req, res) => {
   });
 });
 
+const sleeps = {};
+app.post("/sleep", (req, res) => {
+  const user_code = authenticate(req, res);
+  if (!user_code) return;
+  const now = Date.now();
+  if (req.body.type == "start") {
+    sleeps[user_code] = now;
+  } else if (req.body.type == "end") {
+    if (!sleeps[user_code]) {
+      res.status(400).send('Corresponding "start" request not found');
+      return;
+    }
+    db.run(
+      "INSERT INTO sleeps VALUES(?, ?, ?)",
+      user_code,
+      sleeps[user_code],
+      now
+    );
+    console.log(user_code, sleeps[user_code], now);
+    delete sleeps[user_code];
+  }
+});
+
+app.get("/sleep", (req, res) => {
+  const user_code = authenticate(req, res);
+  if (!user_code) return;
+  db.all("SELECT * FROM sleeps WHERE user_code = ?", user_code, (err, rows) => {
+    res.status(200).json(rows);
+  });
+});
+
 app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}...`);
 });
