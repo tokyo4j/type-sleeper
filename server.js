@@ -24,8 +24,10 @@ if (!fs.existsSync("./test.db")) {
     db.run(
       "CREATE TABLE IF NOT EXISTS sites(user_code INT, name VARCHAR(64), start INT, end INT)"
     );
+    db.run(
+      "CREATE TABLE IF NOT EXISTS sleeps(user_code INT, start INT, end INT)"
+    );
     db.run("INSERT INTO users VALUES(999, 'pass', 'admin')");
-    const d = new Date(2023, 2, 10);
     db.run(`INSERT INTO keys VALUES
               (999, ${new Date(2023, 2, 10, 0, 0, 0).getTime()}, 4),
               (999, ${new Date(2023, 2, 10, 0, 0, 5).getTime()}, 2),
@@ -183,6 +185,14 @@ setInterval(() => {
     }
   }
 }, 5000);
+
+app.get("/site", (req, res) => {
+  const user_code = authenticate(req, res);
+  if (!user_code) return;
+  db.all("SELECT * FROM sites WHERE user_code = ?", user_code, (err, rows) => {
+    res.status(200).json(rows);
+  });
+});
 
 app.listen(PORT, () => {
   console.log(`Listening on port ${PORT}...`);
